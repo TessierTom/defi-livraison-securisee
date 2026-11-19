@@ -1,6 +1,6 @@
 name: Vérifications du projet
 
-'on':
+"on":
   push:
     branches: [main]
   pull_request:
@@ -10,6 +10,18 @@ permissions:
   contents: read
 
 jobs:
+  # security:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+  #       with:
+  #         persist-credentials: false
+  #     - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+  #       with:
+  #         node-version: "24"
+  #         package-manager-cache: false
+  #     - name: Vérifier les dépendances
+  #       run: npm audit --audit-level=moderate
   tests:
     runs-on: ubuntu-latest
     steps:
@@ -18,16 +30,18 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
-          node-version: '24'
+          node-version: "24"
           package-manager-cache: false
       - name: Installer les dépendances
         run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Vérifier les dépendances
+        run: npm audit --audit-level=moderate
       - name: Lancer les tests
         run: npm test
       - name: Vérifier le paramètre de livraison
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         env:
-          RELEASE_TOKEN: demonstration-jeton-inactif-atelier
+          RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         run: |
           if [ -z "${RELEASE_TOKEN:-}" ]; then
             echo "::error::Le jeton de démonstration est absent."
